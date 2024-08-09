@@ -1,0 +1,193 @@
+Criando um schema
+A opção infer_schema nem sempre vai definir o melhor datatype.
+Melhora a performance na leitura de grandes bases.
+Permite uma customização dos tipos das colunas.
+É importante saber para reescrita de aplicações. (Códigos pandas)
+Last execution failed
+18
+18
+12
+# visualizando datasets de exemplos da databricks
+display(dbutils.fs.ls("/databricks-datasets"))
+08:14 PM (<1s)
+19
+19
+# Lendo o arquivo de dados
+arquivo = "dbfs:/databricks-datasets/flights/"
+08:14 PM (15s)
+20
+20
+# lendo o arquivo previamente com a opção inferSchema ligada
+df = spark \
+.read \
+.option("inferSchema", "True")\
+.option("header", "True")\
+.csv(arquivo)
+(2) Spark Jobs
+ 
+df:pyspark.sql.dataframe.DataFrame = [date: string, delay: string ... 3 more fields]
+08:14 PM (<1s)
+21
+21
+# imprime o schema do dataframe (infer_schema=True)
+df.printSchema()
+root
+ |-- date: string (nullable = true)
+ |-- delay: string (nullable = true)
+ |-- distance: string (nullable = true)
+ |-- origin: string (nullable = true)
+ |-- destination: string (nullable = true)
+
+08:15 PM (2s)
+22
+22
+display(df) 
+08:16 PM (<1s)
+23
+23
+# usa o objeto StructType
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DateType, DoubleType, TimestampType
+
+schema_df = StructType([
+    StructField("date", StringType()),
+    StructField("delay", IntegerType()),
+    StructField("distance", IntegerType()),
+    StructField("origin", StringType()),
+    StructField("destination", StringType())
+])
+08:16 PM (<1s)
+24
+24
+# verificando o tipo da variável schema_df
+type(schema_df)
+Out[6]: pyspark.sql.types.StructType
+08:16 PM (1s)
+25
+25
+# usando o parâmetro schema()
+df = spark.read.format("csv")\
+.option("header", "True")\
+.schema(schema_df)\
+.load(arquivo)
+df:pyspark.sql.dataframe.DataFrame
+date:string
+delay:integer
+distance:integer
+origin:string
+destination:string
+08:16 PM (<1s)
+26
+26
+# imprime o schema do dataframe.
+df.printSchema()
+root
+ |-- date: string (nullable = true)
+ |-- delay: integer (nullable = true)
+ |-- distance: integer (nullable = true)
+ |-- origin: string (nullable = true)
+ |-- destination: string (nullable = true)
+
+08:16 PM (1s)
+27
+27
+# imprime 10 primeiras linhas do dataframe.
+df.show(10)
+(1) Spark Jobs
+ 
++--------+-----+--------+------+-----------+
+|    date|delay|distance|origin|destination|
++--------+-----+--------+------+-----------+
+|01011245|    6|     602|   ABE|        ATL|
+|01020600|   -8|     369|   ABE|        DTW|
+|01021245|   -2|     602|   ABE|        ATL|
+|01020605|   -4|     602|   ABE|        ATL|
+|01031245|   -4|     602|   ABE|        ATL|
+|01030605|    0|     602|   ABE|        ATL|
+|01041243|   10|     602|   ABE|        ATL|
+|01040605|   28|     602|   ABE|        ATL|
+|01051245|   88|     602|   ABE|        ATL|
+|01050605|    9|     602|   ABE|        ATL|
++--------+-----+--------+------+-----------+
+only showing top 10 rows
+
+Last execution failed
+28
+28
+12
+# imprime o tipo da varia'vel df 
+type(df)
+Last execution failed
+29
+29
+12
+# retorna as primeiras 10 linhas do dataframe em formato de array.
+df.take(10)
+Last execution failed
+30
+30
+12
+# imprime a quantidade de linhas no dataframe.
+df.count()
+Last execution failed
+31
+31
+12
+from pyspark.sql.functions import max
+df.select(max("delay")).take(1)
+Last execution failed
+32
+32
+12
+# Filtrando linhas de um dataframe usando filter
+df.filter("delay < 2").show(2)
+Last execution failed
+33
+33
+12
+# Usando where (um alias para o metodo filter)
+df.where("delay < 2").show(2)
+Last execution failed
+34
+34
+12
+# ordena o dataframe pela coluna delay
+df.sort("delay").show(5)
+Last execution failed
+35
+35
+123
+from pyspark.sql.functions import desc, asc, expr
+# ordenando por ordem crescente
+df.orderBy(expr("delay desc")).show(10)
+Last execution failed
+36
+36
+12
+# visualizando estatísticas descritivas
+df.describe().show()
+Last execution failed
+37
+37
+1234
+# iterando sobre todas as linhas do dataframe
+for i in df.collect():
+  #print (i)
+  print(i[0], i[1], i[2] * 2)
+Last execution failed
+38
+38
+123
+# Adicionando uma coluna ao dataframe
+df = df.withColumn('Nova Coluna',df['delay']+2)
+df.show(10)
+Last execution failed
+39
+39
+123
+# Reovendo coluna
+df = df.drop('Nova Coluna')
+df.show(10)
+Last execution failed
+40
+40
+12
